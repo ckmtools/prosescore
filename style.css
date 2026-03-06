@@ -102,6 +102,10 @@ nav {
   font-size: 1.25rem;
 }
 
+.accent {
+  color: var(--color-primary);
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
