@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProseScore — Free Readability & Content Analysis Tool</title>
+  <meta name="description" content="Analyze your text's readability, sentiment, keywords, and SEO score. 8 readability formulas, all client-side. Your text never leaves your browser.">
+  <meta name="keywords" content="readability checker, reading level, flesch kincaid, content analysis, SEO score, sentiment analysis, text analyzer, hemingway alternative">
+  <link rel="canonical" href="https://prosescore.ckmtools.dev/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ProseScore — Free Readability & Content Analysis">
+  <meta property="og:description" content="8 readability formulas + sentiment + SEO scoring. Runs in your browser — nothing uploaded.">
+  <meta property="og:image" content="https://prosescore.ckmtools.dev/assets/og-image.png">
+  <meta property="og:url" content="https://prosescore.ckmtools.dev/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ProseScore">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ProseScore — Free Readability & Content Analysis">
+  <meta name="twitter:description" content="8 readability formulas + sentiment + SEO scoring. Client-side privacy.">
+  <meta name="twitter:image" content="https://prosescore.ckmtools.dev/assets/og-image.png">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ProseScore",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": [
+      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free readability analysis" },
+      { "@type": "Offer", "price": "9.99", "priceCurrency": "USD", "description": "Pro — full analysis suite" }
+    ],
+    "description": "Client-side text readability, sentiment, and SEO analysis tool with 8 readability formulas",
+    "url": "https://prosescore.ckmtools.dev/",
+    "author": { "@type": "Organization", "name": "ckmtools", "url": "https://ckmtools.dev" }
+  }
+  </script>
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav>
+    <div class="nav-inner">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="26" rx="3" stroke="#00E5A0" stroke-width="2.5" fill="none"/>
+          <path d="M8 14l4 4 8-8" stroke="#00E5A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wordmark">ProseScore</span>
+      </div>
+      <div class="nav-actions">
+        <span id="pro-badge" class="pro-badge" hidden>Pro</span>
+        <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <h1>ProseScore</h1>
+      <p>Analyze readability, sentiment, and SEO. Nothing leaves your browser.</p>
+    </header>
+
+    <section class="input-section">
+      <label for="text-input" class="sr-only">Text to analyze</label>
+      <textarea id="text-input" rows="10" placeholder="Paste or type your text here..."></textarea>
+      <div class="char-count" id="char-count">0 characters</div>
+      <div id="upload-zone" class="upload-zone" role="button" tabindex="0" aria-label="Upload a text file">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Drop a .txt or .md file here, or click to browse</span>
+        <input type="file" id="file-input" accept=".txt,.md,text/plain,text/markdown" hidden>
+      </div>
+      <button id="analyze-btn" type="button" disabled>Analyze</button>
+    </section>
+
+    <section id="results" role="status" aria-live="polite" hidden>
+      <div id="free-results">
+        <!-- Score meter -->
+        <div class="score-card">
+          <div class="score-meter" id="score-meter">
+            <svg viewBox="0 0 200 120" class="meter-svg" aria-hidden="true">
+              <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="var(--border)" stroke-width="12" stroke-linecap="round"/>
+              <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="var(--color-primary)" stroke-width="12" stroke-linecap="round" id="meter-fill" stroke-dasharray="251" stroke-dashoffset="251"/>
+            </svg>
+            <div class="score-value" id="score-value">--</div>
+            <div class="score-label" id="score-label">Flesch-Kincaid grade</div>
+          </div>
+          <div class="score-interpretation" id="score-interpretation"></div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stats-grid" id="stats-grid">
+          <!-- Cards will be populated by JS -->
+        </div>
+
+        <!-- Reading recommendation -->
+        <div class="recommendation" id="recommendation" hidden></div>
+      </div>
+      <div id="pro-results" class="pro-section">
+        <!-- Paywall overlay (shown when not Pro) -->
+        <div id="paywall" class="paywall-overlay">
+          <div class="paywall-content">
+            <h2>Unlock Pro analysis</h2>
+            <p>Get all 8 readability formulas, sentiment analysis, keyword extraction, SEO scoring, and text summarization.</p>
+            <a id="pro-buy-btn" class="btn btn-pro" href="#">Unlock Pro — $9.99</a>
+            <p class="paywall-note">One-time payment. No subscription.</p>
+          </div>
+        </div>
+
+        <!-- Consensus grade -->
+        <div id="consensus-section" class="pro-card">
+          <h2>Consensus grade level</h2>
+          <div id="consensus-value" class="consensus-value"></div>
+          <p id="consensus-note" class="text-secondary"></p>
+        </div>
+
+        <!-- All 8 readability formulas -->
+        <div id="readability-section" class="pro-card">
+          <h2>Readability formulas</h2>
+          <div id="readability-table" class="formula-grid"></div>
+        </div>
+
+        <!-- Sentiment -->
+        <div id="sentiment-section" class="pro-card">
+          <h2>Sentiment analysis</h2>
+          <div id="sentiment-display"></div>
+        </div>
+
+        <!-- Keywords -->
+        <div id="keywords-section" class="pro-card">
+          <h2>Top keywords</h2>
+          <div id="keywords-list"></div>
+        </div>
+
+        <!-- SEO -->
+        <div id="seo-section" class="pro-card">
+          <h2>SEO score</h2>
+          <div id="seo-display"></div>
+        </div>
+
+        <!-- Summary -->
+        <div id="summary-section" class="pro-card">
+          <h2>Summary</h2>
+          <div id="summary-display"></div>
+        </div>
+      </div>
+      <div id="actions" class="actions-bar">
+        <button id="export-md-btn" type="button" class="btn btn-secondary" title="Export as markdown" aria-label="Export as markdown">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M2 2h12v12H2V2zm1 1v10h10V3H3zm2 2h2l1.5 3L10 5h2v6h-1.5V7.5L9 10.5 7.5 7.5V11H6V5z"/>
+          </svg>
+          Export markdown
+        </button>
+        <button id="history-toggle-btn" type="button" class="btn btn-secondary" title="Analysis history" aria-label="Analysis history">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM0 8a8 8 0 1116 0A8 8 0 010 8zm8-3.5a.5.5 0 01.5.5v3l2.5 1.5a.5.5 0 01-.5.87L7.75 9V5a.5.5 0 01.5-.5z"/>
+          </svg>
+          History
+        </button>
+      </div>
+
+      <aside id="history-panel" class="history-panel" hidden>
+        <div class="history-header">
+          <h2>Analysis history</h2>
+          <button id="history-close" type="button" class="btn-icon" aria-label="Close history">&times;</button>
+        </div>
+        <div id="history-list"></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built by <a href="https://ckmtools.dev">ckmtools</a> · Powered by <a href="https://www.npmjs.com/package/textlens">textlens</a> · 2026</p>
+  </footer>
+
+  <script src="textlens.iife.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
