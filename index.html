@@ -32,7 +32,9 @@
     "operatingSystem": "Web",
     "offers": [
       { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free readability analysis" },
-      { "@type": "Offer", "price": "9.99", "priceCurrency": "USD", "description": "Pro — full analysis suite" }
+      { "@type": "Offer", "price": "3.99", "priceCurrency": "USD", "description": "Pro monthly subscription" },
+      { "@type": "Offer", "price": "39.99", "priceCurrency": "USD", "description": "Pro annual subscription" },
+      { "@type": "Offer", "price": "19.99", "priceCurrency": "USD", "description": "Pro lifetime access" }
     ],
     "description": "Client-side text readability, sentiment, and SEO analysis tool with 8 readability formulas",
     "url": "https://prosescore.ckmtools.dev/",
@@ -110,61 +112,78 @@
         </div>
 
         <!-- Stats grid -->
-        <div class="stats-grid" id="stats-grid">
-          <!-- Cards will be populated by JS -->
-        </div>
+        <div class="stats-grid" id="stats-grid"></div>
 
         <!-- Reading recommendation -->
         <div class="recommendation" id="recommendation" hidden></div>
       </div>
-      <div id="pro-results" class="pro-section">
-        <!-- Paywall overlay (shown when not Pro) -->
-        <div id="paywall" class="paywall-overlay">
-          <div class="paywall-content">
-            <h2>Unlock Pro analysis</h2>
-            <p>Get all 8 readability formulas, sentiment analysis, keyword extraction, SEO scoring, and text summarization.</p>
-            <a id="pro-buy-btn" class="btn btn-pro" href="#">Unlock Pro — $9.99</a>
-            <p class="paywall-note">One-time payment. No subscription.</p>
+
+      <!-- Paywall CTA — positioned BETWEEN free results and blurred pro content -->
+      <div id="paywall" class="paywall-banner">
+        <div class="paywall-content">
+          <h2>Unlock full analysis</h2>
+          <p>8 readability formulas, sentiment, keywords, SEO scoring, summarization, export, and history.</p>
+          <div id="paywall-message" class="paywall-message" hidden></div>
+          <div class="pricing-options">
+            <a id="buy-monthly" class="btn btn-pro" href="#">$3.99/mo</a>
+            <a id="buy-annual" class="btn btn-pro-secondary" href="#">$39.99/yr <span class="save-tag">Save 17%</span></a>
+            <a id="buy-lifetime" class="btn btn-lifetime" href="#">$19.99 lifetime</a>
+          </div>
+          <div class="paywall-footer">
+            <button id="restore-btn" type="button" class="btn-link">Restore purchase</button>
+          </div>
+          <div id="restore-form" class="restore-form" hidden>
+            <input type="email" id="restore-email" placeholder="Email used at checkout" aria-label="Email address">
+            <div class="restore-actions">
+              <button id="restore-submit" type="button" class="btn btn-sm">Restore</button>
+              <button id="restore-cancel" type="button" class="btn-link btn-sm">Cancel</button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- Consensus grade -->
-        <div id="consensus-section" class="pro-card">
-          <h2>Consensus grade level</h2>
-          <div id="consensus-value" class="consensus-value"></div>
-          <p id="consensus-note" class="text-secondary"></p>
-        </div>
+      <!-- Pro content teaser (blurred when locked) -->
+      <div id="pro-teaser" class="pro-teaser">
+        <div id="pro-results" class="pro-section">
+          <!-- Consensus grade -->
+          <div id="consensus-section" class="pro-card">
+            <h2>Consensus grade level</h2>
+            <div id="consensus-value" class="consensus-value"></div>
+            <p id="consensus-note" class="text-secondary"></p>
+          </div>
 
-        <!-- All 8 readability formulas -->
-        <div id="readability-section" class="pro-card">
-          <h2>Readability formulas</h2>
-          <div id="readability-table" class="formula-grid"></div>
-        </div>
+          <!-- All 8 readability formulas -->
+          <div id="readability-section" class="pro-card">
+            <h2>Readability formulas</h2>
+            <div id="readability-table" class="formula-grid"></div>
+          </div>
 
-        <!-- Sentiment -->
-        <div id="sentiment-section" class="pro-card">
-          <h2>Sentiment analysis</h2>
-          <div id="sentiment-display"></div>
-        </div>
+          <!-- Sentiment -->
+          <div id="sentiment-section" class="pro-card">
+            <h2>Sentiment analysis</h2>
+            <div id="sentiment-display"></div>
+          </div>
 
-        <!-- Keywords -->
-        <div id="keywords-section" class="pro-card">
-          <h2>Top keywords</h2>
-          <div id="keywords-list"></div>
-        </div>
+          <!-- Keywords -->
+          <div id="keywords-section" class="pro-card">
+            <h2>Top keywords</h2>
+            <div id="keywords-list"></div>
+          </div>
 
-        <!-- SEO -->
-        <div id="seo-section" class="pro-card">
-          <h2>SEO score</h2>
-          <div id="seo-display"></div>
-        </div>
+          <!-- SEO -->
+          <div id="seo-section" class="pro-card">
+            <h2>SEO score</h2>
+            <div id="seo-display"></div>
+          </div>
 
-        <!-- Summary -->
-        <div id="summary-section" class="pro-card">
-          <h2>Summary</h2>
-          <div id="summary-display"></div>
+          <!-- Summary -->
+          <div id="summary-section" class="pro-card">
+            <h2>Summary</h2>
+            <div id="summary-display"></div>
+          </div>
         </div>
       </div>
+
       <div id="actions" class="actions-bar">
         <button id="export-md-btn" type="button" class="btn btn-secondary" title="Export as markdown" aria-label="Export as markdown">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">

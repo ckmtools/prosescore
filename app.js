@@ -1,28 +1,34 @@
-const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/dRmdR9g2mfvr3DVbK8f7i01';
-const STORAGE_KEY_PRO = 'prosescore_pro';
-const STORAGE_KEY_HISTORY = 'prosescore_history';
-const STORAGE_KEY_THEME = 'prosescore_theme';
+var STRIPE_MONTHLY_URL = 'https://buy.stripe.com/bJeaEX8zUgzvb6n5lKf7i02';
+var STRIPE_ANNUAL_URL = 'https://buy.stripe.com/bJedR9dUednj5M34hGf7i03';
+var STRIPE_LIFETIME_URL = 'https://buy.stripe.com/14A3cv9DYfvr1vNaG4f7i04';
+var STORAGE_KEY_TOKEN = 'prosescore_token';
+var STORAGE_KEY_HISTORY = 'prosescore_history';
+var STORAGE_KEY_THEME = 'prosescore_theme';
+var TOKEN_PUBLIC_KEY = '4a0b3583a9941e9ff34ccad878f001c02f003b96335c9fc2bfc40f98caa820ed';
+var API_BASE = '/api';
 
-let isPro = localStorage.getItem(STORAGE_KEY_PRO) === 'true';
-let currentResult = null;
+var isPro = false;
+var proProduct = null;
+var currentResult = null;
 
 function init() {
-  checkProUnlock();
+  checkStoredToken();
+  checkSessionRedirect();
   setupThemeToggle();
   setupAnalysis();
   setupFileUpload();
   setupCharCounter();
+  setupPaywall();
+  setupRestoreForm();
   updateProBadge();
   updateProUI();
 
-  // Export button
   document.getElementById('export-md-btn').addEventListener('click', function () {
     if (!currentResult) return;
     if (!isPro) { alert('Export is a Pro feature. Unlock Pro to export reports.'); return; }
     exportMarkdown();
   });
 
-  // History toggle
   var historyToggle = document.getElementById('history-toggle-btn');
   var historyPanel = document.getElementById('history-panel');
   historyToggle.addEventListener('click', function () {
@@ -31,37 +37,205 @@ function init() {
     if (!historyPanel.hidden) renderHistoryPanel();
   });
 
-  // History close button
   document.getElementById('history-close').addEventListener('click', function () {
     document.getElementById('history-panel').hidden = true;
   });
 }
 
-function checkProUnlock() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('pro') === 'success') {
-    localStorage.setItem(STORAGE_KEY_PRO, 'true');
+// --- Token verification ---
+
+function parseToken(tokenStr) {
+  try {
+    var parts = tokenStr.split('.');
+    if (parts.length !== 3) return null;
+    var payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch (e) { return null; }
+}
+
+function isTokenExpired(payload) {
+  if (!payload || !payload.exp) return true;
+  return Math.floor(Date.now() / 1000) > payload.exp;
+}
+
+function checkStoredToken() {
+  var token = localStorage.getItem(STORAGE_KEY_TOKEN);
+  if (!token) {
+    // Migration: check old boolean key
+    if (localStorage.getItem('prosescore_pro') === 'true') {
+      // Old user — keep pro active but prompt to verify
+      isPro = true;
+      proProduct = 'legacy';
+      return;
+    }
+    isPro = false;
+    return;
+  }
+
+  var payload = parseToken(token);
+  if (!payload) {
+    isPro = false;
+    return;
+  }
+
+  if (isTokenExpired(payload)) {
+    // Try silent refresh for subscriptions
+    if (payload.product === 'subscription' && payload.email) {
+      silentRestore(payload.email);
+    }
+    isPro = false;
+    return;
+  }
+
+  isPro = true;
+  proProduct = payload.product;
+}
+
+async function checkSessionRedirect() {
+  var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id');
+  if (!sessionId) return;
+
+  // Clean URL immediately
+  window.history.replaceState({}, '', window.location.pathname);
+
+  try {
+    var res = await fetch(API_BASE + '/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {}; });
+      showPaywallMessage('Payment verification failed: ' + (err.error || 'Unknown error'), true);
+      return;
+    }
+
+    var data = await res.json();
+    localStorage.setItem(STORAGE_KEY_TOKEN, data.token);
+    localStorage.removeItem('prosescore_pro'); // Clean up old key
     isPro = true;
-    window.history.replaceState({}, '', window.location.pathname);
+    proProduct = data.product;
     updateProUI();
+    updateProBadge();
+    showPaywallMessage('Pro unlocked. Thank you for your purchase.', false);
+  } catch (e) {
+    showPaywallMessage('Could not verify payment. Please try restoring your purchase.', true);
   }
 }
 
+async function silentRestore(email) {
+  try {
+    var res = await fetch(API_BASE + '/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    });
+    if (res.ok) {
+      var data = await res.json();
+      localStorage.setItem(STORAGE_KEY_TOKEN, data.token);
+      isPro = true;
+      proProduct = data.product;
+      updateProUI();
+      updateProBadge();
+    }
+  } catch (e) {
+    // Silent failure
+  }
+}
+
+function showPaywallMessage(msg, isError) {
+  var el = document.getElementById('paywall-message');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'paywall-message ' + (isError ? 'error' : 'success');
+  el.hidden = false;
+}
+
+// --- Restore purchase form ---
+
+function setupRestoreForm() {
+  var btn = document.getElementById('restore-btn');
+  var form = document.getElementById('restore-form');
+  var submitBtn = document.getElementById('restore-submit');
+  var cancelBtn = document.getElementById('restore-cancel');
+
+  if (!btn) return;
+
+  btn.addEventListener('click', function () {
+    form.hidden = !form.hidden;
+  });
+
+  cancelBtn.addEventListener('click', function () {
+    form.hidden = true;
+  });
+
+  submitBtn.addEventListener('click', async function () {
+    var emailInput = document.getElementById('restore-email');
+    var email = emailInput.value.trim();
+    if (!email) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Checking...';
+
+    try {
+      var res = await fetch(API_BASE + '/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+      });
+
+      if (res.ok) {
+        var data = await res.json();
+        localStorage.setItem(STORAGE_KEY_TOKEN, data.token);
+        localStorage.removeItem('prosescore_pro');
+        isPro = true;
+        proProduct = data.product;
+        updateProUI();
+        updateProBadge();
+        form.hidden = true;
+        showPaywallMessage('Purchase restored.', false);
+      } else {
+        var err = await res.json().catch(function () { return {}; });
+        showPaywallMessage(err.error || 'No purchase found for this email.', true);
+      }
+    } catch (e) {
+      showPaywallMessage('Could not connect to server. Please try again.', true);
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Restore';
+  });
+}
+
+// --- Paywall setup ---
+
+function setupPaywall() {
+  var monthlyBtn = document.getElementById('buy-monthly');
+  var annualBtn = document.getElementById('buy-annual');
+  var lifetimeBtn = document.getElementById('buy-lifetime');
+
+  if (monthlyBtn) monthlyBtn.href = STRIPE_MONTHLY_URL;
+  if (annualBtn) annualBtn.href = STRIPE_ANNUAL_URL;
+  if (lifetimeBtn) lifetimeBtn.href = STRIPE_LIFETIME_URL;
+}
+
 function updateProBadge() {
-  const badge = document.getElementById('pro-badge');
+  var badge = document.getElementById('pro-badge');
   if (badge) badge.hidden = !isPro;
 }
 
 function setupThemeToggle() {
-  const saved = localStorage.getItem(STORAGE_KEY_THEME);
+  var saved = localStorage.getItem(STORAGE_KEY_THEME);
   if (saved === 'light') {
     document.documentElement.setAttribute('data-theme', 'light');
   }
 
-  const btn = document.getElementById('theme-toggle');
+  var btn = document.getElementById('theme-toggle');
   if (btn) {
     btn.addEventListener('click', function () {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
       if (isLight) {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem(STORAGE_KEY_THEME, 'dark');
@@ -177,7 +351,6 @@ function getRecommendation(grade) {
 function renderFreeResults(result) {
   var grade = result.readability.fleschKincaidGrade.grade;
 
-  // Score meter
   var scoreValue = document.getElementById('score-value');
   var meterFill = document.getElementById('meter-fill');
   var scoreLabel = document.getElementById('score-label');
@@ -193,7 +366,6 @@ function renderFreeResults(result) {
   meterFill.setAttribute('stroke-dashoffset', offset);
   meterFill.setAttribute('stroke', getGradeColor(grade));
 
-  // Stats grid
   var statsGrid = document.getElementById('stats-grid');
   var rt = result.readingTime;
   var readingTimeStr = rt.minutes + ' min ' + rt.seconds + ' sec';
@@ -213,7 +385,6 @@ function renderFreeResults(result) {
     return '<div class="stat-card"><div class="stat-value">' + s.value + '</div><div class="stat-label">' + s.label + '</div></div>';
   }).join('');
 
-  // Recommendation
   var rec = document.getElementById('recommendation');
   rec.textContent = getRecommendation(grade);
   rec.hidden = false;
@@ -241,26 +412,25 @@ function escapeHtml(str) {
 
 function updateProUI() {
   var paywall = document.getElementById('paywall');
+  var proTeaser = document.getElementById('pro-teaser');
   if (isPro) {
     paywall.classList.add('hidden');
+    if (proTeaser) proTeaser.classList.add('hidden');
   } else {
     paywall.classList.remove('hidden');
+    if (proTeaser) proTeaser.classList.remove('hidden');
   }
-  var buyBtn = document.getElementById('pro-buy-btn');
-  if (buyBtn) buyBtn.href = STRIPE_PAYMENT_URL;
 }
 
 function renderProResults(data) {
   var result = data.analysis;
   var seo = data.seo;
 
-  // Consensus grade
   var consensusGrade = result.readability.consensusGrade;
   document.getElementById('consensus-value').textContent = consensusGrade.toFixed(1);
   document.getElementById('consensus-value').style.color = gradeColor(consensusGrade);
   document.getElementById('consensus-note').textContent = 'Average across 7 grade-level formulas';
 
-  // Readability formulas
   var formulas = [
     { name: 'Flesch Reading Ease', data: result.readability.fleschReadingEase, isScore: true },
     { name: 'Flesch-Kincaid', data: result.readability.fleschKincaidGrade, isScore: false },
@@ -276,7 +446,6 @@ function renderProResults(data) {
     var value, color;
     if (f.isScore) {
       value = f.data.score.toFixed(1);
-      // Flesch Reading Ease: higher is easier (invert for color)
       var easeGrade = f.data.grade != null ? f.data.grade : (100 - f.data.score) / 5;
       color = gradeColor(easeGrade);
     } else {
@@ -290,7 +459,6 @@ function renderProResults(data) {
   }).join('');
   document.getElementById('readability-table').innerHTML = gridHtml;
 
-  // Sentiment
   var sent = result.sentiment;
   var sentColor = sent.label === 'positive' ? '#3FB950' : sent.label === 'negative' ? '#F85149' : '#8B949E';
   var barWidth = Math.min(Math.abs(sent.comparative) * 100, 100);
@@ -321,7 +489,6 @@ function renderProResults(data) {
   }
   document.getElementById('sentiment-display').innerHTML = sentHtml;
 
-  // Keywords
   var keywords = result.keywords || [];
   var maxCount = keywords.length ? keywords[0].count : 1;
   var kwHtml = keywords.map(function (kw) {
@@ -334,7 +501,6 @@ function renderProResults(data) {
   }).join('');
   document.getElementById('keywords-list').innerHTML = kwHtml;
 
-  // SEO
   var seoData = seo;
   var seoHtml = '<div class="seo-score-big" style="color: ' + seoColor(seoData.score) + '">' + seoData.score + '</div>' +
     '<div class="seo-grade">Grade: ' + escapeHtml(seoData.grade) + '</div>' +
@@ -362,7 +528,6 @@ function renderProResults(data) {
   }
   document.getElementById('seo-display').innerHTML = seoHtml;
 
-  // Summary
   var summary = result.summary;
   var summaryHtml = '<p class="summary-text">' + escapeHtml(summary.sentences.join(' ')) + '</p>' +
     '<p class="summary-ratio">Compression ratio: ' + (summary.ratio * 100).toFixed(0) + '% of original</p>';
@@ -394,7 +559,6 @@ function exportMarkdown() {
   md += '**Words:** ' + result.statistics.words + ' | **Sentences:** ' + result.statistics.sentences +
     ' | **Paragraphs:** ' + result.statistics.paragraphs + ' | **Reading time:** ' + rt.minutes + ' min ' + rt.seconds + ' sec\n\n';
 
-  // Readability table
   md += '## Readability\n\n';
   md += '| Formula | Grade | Score | Interpretation |\n';
   md += '|---------|-------|-------|----------------|\n';
@@ -420,7 +584,6 @@ function exportMarkdown() {
   var fre = result.readability.fleschReadingEase;
   md += '**Flesch Reading Ease:** ' + fre.score.toFixed(1) + ' — ' + (fre.interpretation || '') + '\n\n';
 
-  // Sentiment
   var sent = result.sentiment;
   md += '## Sentiment\n\n';
   md += '**Label:** ' + sent.label.charAt(0).toUpperCase() + sent.label.slice(1) +
@@ -435,7 +598,6 @@ function exportMarkdown() {
   }
   md += '\n';
 
-  // Keywords
   var keywords = result.keywords || [];
   if (keywords.length) {
     md += '## Top keywords\n\n';
@@ -447,7 +609,6 @@ function exportMarkdown() {
     md += '\n';
   }
 
-  // SEO
   md += '## SEO Score\n\n';
   md += '**Overall:** ' + seo.score + '/100 (' + seo.grade + ')\n\n';
   md += '| Metric | Score |\n';
@@ -468,7 +629,6 @@ function exportMarkdown() {
     md += '\n';
   }
 
-  // Summary
   var summary = result.summary;
   if (summary && summary.sentences && summary.sentences.length) {
     md += '## Summary\n\n';
