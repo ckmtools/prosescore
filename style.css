@@ -78,6 +78,7 @@ body {
 
 /* Nav */
 nav {
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -87,7 +88,8 @@ nav {
   align-items: center;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0 24px;
+  height: 56px;
 }
 
 .logo {
@@ -157,10 +159,11 @@ nav {
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0 24px 48px;
 }
 
 .hero {
+  padding-top: 2rem;
   margin-bottom: 2rem;
 }
 
@@ -366,19 +369,19 @@ main {
 /* Footer */
 footer {
   text-align: center;
-  padding: 2rem 1rem;
+  padding: 32px 24px;
   color: var(--text-secondary);
   font-size: 0.875rem;
   border-top: 1px solid var(--border);
 }
 
 footer a {
-  color: var(--color-primary);
+  color: var(--text-secondary);
   text-decoration: none;
 }
 
 footer a:hover {
-  text-decoration: underline;
+  color: var(--text-primary);
 }
 
 /* Pro section */
@@ -699,9 +702,6 @@ footer a:hover {
 
 /* Tablet+ */
 @media (min-width: 768px) {
-  .nav-inner {
-    padding: 1rem 1.5rem;
-  }
 
   #text-input {
     min-height: 300px;
