@@ -7,7 +7,13 @@ Free browser-based readability analyzer with 8 formulas, sentiment analysis, and
 
 **[Open the live app](https://prosescore.ckmtools.dev/)**
 
-![ProseScore app screenshot](assets/app-screenshot.png)
+### Screenshots
+
+![ProseScore app screenshot](https://raw.githubusercontent.com/ckmtools/prosescore/main/assets/app-screenshot.png)
+
+![Feature comparison — Free vs Pro](https://raw.githubusercontent.com/ckmtools/prosescore/main/assets/feature-comparison.png)
+
+![Analysis preview](https://raw.githubusercontent.com/ckmtools/prosescore/main/assets/analysis-preview.png)
 
 ## Features
 
@@ -33,8 +39,6 @@ Free browser-based readability analyzer with 8 formulas, sentiment analysis, and
 - File upload (.txt, .md, .docx)
 - Dark and light mode
 
-![Feature comparison](assets/feature-comparison.png)
-
 ## Privacy
 
 ProseScore runs entirely client-side. No data is sent to any server. Your text never leaves the browser.
@@ -42,8 +46,6 @@ ProseScore runs entirely client-side. No data is sent to any server. Your text n
 ## How it works
 
 Paste or upload text. Get instant analysis. Built on [textlens](https://www.npmjs.com/package/textlens). No account needed for free features.
-
-![Analysis preview](assets/analysis-preview.png)
 
 ## Compare
 
