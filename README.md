@@ -45,6 +45,12 @@ Paste or upload text. Get instant analysis. Built on [textlens](https://www.npmj
 
 ![Analysis preview](assets/analysis-preview.png)
 
+## Compare
+
+- [ProseScore vs Hemingway App](https://ckmtools.dev/prosescore/vs-hemingway/) — 8 formulas where Hemingway offers one
+- [ProseScore vs Grammarly](https://ckmtools.dev/prosescore/vs-grammarly/) — Free, private readability without the cloud
+- [ProseScore vs Readable.io](https://ckmtools.dev/prosescore/vs-readable/) — No signup, no subscription, same core formulas
+
 ## Tech stack
 
 - Pure HTML, CSS, and JavaScript
