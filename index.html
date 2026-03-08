@@ -94,7 +94,24 @@
         <span>Drop a .txt or .md file here, or click to browse</span>
         <input type="file" id="file-input" accept=".txt,.md,text/plain,text/markdown" hidden>
       </div>
-      <button id="analyze-btn" type="button" disabled>Analyze</button>
+      <div class="analyze-row">
+        <button id="analyze-btn" type="button" disabled>Analyze</button>
+        <span id="usage-counter" class="usage-counter" hidden></span>
+      </div>
+    </section>
+
+    <!-- Usage limit banner -->
+    <section id="limit-banner" class="limit-banner" hidden>
+      <div class="limit-content">
+        <h2>Daily limit reached</h2>
+        <p>You've used all 5 free analyses for today. Upgrade to Pro for unlimited analyses, detailed reports, export, and history.</p>
+        <div class="pricing-options">
+          <a class="btn btn-pro" href="https://buy.stripe.com/bJeaEX8zUgzvb6n5lKf7i02">$3.99/mo</a>
+          <a class="btn btn-pro-secondary" href="https://buy.stripe.com/bJedR9dUednj5M34hGf7i03">$39.99/yr <span class="save-tag">Save 17%</span></a>
+          <a class="btn btn-lifetime" href="https://buy.stripe.com/14A3cv9DYfvr1vNaG4f7i04">$19.99 lifetime</a>
+        </div>
+        <p class="limit-note">Resets at midnight. Or upgrade now for unlimited access.</p>
+      </div>
     </section>
 
     <section id="results" role="status" aria-live="polite" hidden>

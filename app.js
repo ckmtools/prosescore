@@ -4,8 +4,10 @@ var STRIPE_LIFETIME_URL = 'https://buy.stripe.com/14A3cv9DYfvr1vNaG4f7i04';
 var STORAGE_KEY_TOKEN = 'prosescore_token';
 var STORAGE_KEY_HISTORY = 'prosescore_history';
 var STORAGE_KEY_THEME = 'prosescore_theme';
+var STORAGE_KEY_USAGE = 'prosescore_usage';
 var TOKEN_PUBLIC_KEY = '4a0b3583a9941e9ff34ccad878f001c02f003b96335c9fc2bfc40f98caa820ed';
 var API_BASE = '/api';
+var FREE_DAILY_LIMIT = 5;
 
 var isPro = false;
 var proProduct = null;
@@ -22,6 +24,7 @@ function init() {
   setupRestoreForm();
   updateProBadge();
   updateProUI();
+  updateUsageDisplay();
 
   document.getElementById('export-md-btn').addEventListener('click', function () {
     if (!currentResult) return;
@@ -119,6 +122,7 @@ async function checkSessionRedirect() {
     proProduct = data.product;
     updateProUI();
     updateProBadge();
+    updateUsageDisplay();
     showPaywallMessage('Pro unlocked. Thank you for your purchase.', false);
   } catch (e) {
     showPaywallMessage('Could not verify payment. Please try restoring your purchase.', true);
@@ -312,6 +316,49 @@ function updateAnalyzeButton() {
   btn.disabled = !textarea.value.trim();
 }
 
+// --- Usage counter ---
+
+function getUsageToday() {
+  try {
+    var data = JSON.parse(localStorage.getItem(STORAGE_KEY_USAGE));
+    if (data && data.date === todayStr()) return data.count;
+  } catch (e) {}
+  return 0;
+}
+
+function incrementUsage() {
+  var count = getUsageToday() + 1;
+  localStorage.setItem(STORAGE_KEY_USAGE, JSON.stringify({ date: todayStr(), count: count }));
+  updateUsageDisplay();
+  return count;
+}
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function updateUsageDisplay() {
+  var el = document.getElementById('usage-counter');
+  if (!el) return;
+  if (isPro) {
+    el.hidden = true;
+    return;
+  }
+  var used = getUsageToday();
+  var remaining = Math.max(FREE_DAILY_LIMIT - used, 0);
+  el.textContent = remaining + ' of ' + FREE_DAILY_LIMIT + ' free analyses remaining today';
+  el.hidden = false;
+  el.className = 'usage-counter' + (remaining <= 1 ? ' usage-low' : '');
+}
+
+function showLimitBanner() {
+  var banner = document.getElementById('limit-banner');
+  if (banner) banner.hidden = false;
+  var results = document.getElementById('results');
+  if (results) results.hidden = true;
+}
+
 function setupAnalysis() {
   var textarea = document.getElementById('text-input');
   var btn = document.getElementById('analyze-btn');
@@ -320,10 +367,21 @@ function setupAnalysis() {
     var text = textarea.value.trim();
     if (!text || text.split(/\s+/).filter(Boolean).length < 1) return;
 
+    // Check usage limit for free users
+    if (!isPro && getUsageToday() >= FREE_DAILY_LIMIT) {
+      showLimitBanner();
+      return;
+    }
+
     var result = textlens.analyze(text);
     var density = textlens.density(text);
     var seo = textlens.seoScore(text);
     currentResult = { analysis: result, density: density, seo: seo };
+
+    // Increment usage for free users
+    if (!isPro) incrementUsage();
+
+    document.getElementById('limit-banner').hidden = true;
     document.getElementById('results').hidden = false;
     renderFreeResults(result);
     renderProResults(currentResult);
@@ -413,9 +471,11 @@ function escapeHtml(str) {
 function updateProUI() {
   var paywall = document.getElementById('paywall');
   var proTeaser = document.getElementById('pro-teaser');
+  var limitBanner = document.getElementById('limit-banner');
   if (isPro) {
     paywall.classList.add('hidden');
     if (proTeaser) proTeaser.classList.add('hidden');
+    if (limitBanner) limitBanner.hidden = true;
   } else {
     paywall.classList.remove('hidden');
     if (proTeaser) proTeaser.classList.remove('hidden');

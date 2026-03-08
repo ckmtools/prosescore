@@ -1040,6 +1040,58 @@ footer a:hover {
   background: rgba(248, 81, 73, 0.15);
 }
 
+/* Analyze row */
+.analyze-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Usage counter */
+.usage-counter {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.usage-counter.usage-low {
+  color: var(--color-warning);
+}
+
+/* Limit banner */
+.limit-banner {
+  background: var(--surface);
+  border: 2px solid var(--color-warning);
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.limit-content {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.limit-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--color-warning);
+}
+
+.limit-content > p {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.limit-note {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  margin-top: 1rem;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
