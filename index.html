@@ -79,6 +79,7 @@
     <header class="hero">
       <h1>Prose<span class="accent">Score</span></h1>
       <p>Analyze readability, sentiment, and SEO. Nothing leaves your browser.</p>
+      <div class="analysis-counter" id="analysis-counter" aria-label="Total analyses run"></div>
     </header>
 
     <section class="input-section">
@@ -100,6 +101,42 @@
       </div>
     </section>
 
+    <section class="pricing-section" aria-label="Pricing">
+      <h2>Pricing</h2>
+      <p class="pricing-desc">5 free analyses per day. Upgrade for unlimited access.</p>
+      <div class="pricing-cards">
+        <div class="pricing-card">
+          <h3>Free</h3>
+          <div class="pricing-price">$0</div>
+          <ul>
+            <li>5 analyses/day</li>
+            <li>Flesch-Kincaid grade</li>
+            <li>Word &amp; sentence stats</li>
+          </ul>
+          <span class="pricing-current">Current plan</span>
+        </div>
+        <div class="pricing-card pricing-card-featured">
+          <h3>Pro</h3>
+          <div class="pricing-price">$3.99<span class="pricing-period">/mo</span></div>
+          <ul>
+            <li>Unlimited analyses</li>
+            <li>All 8 readability formulas</li>
+            <li>Sentiment analysis</li>
+            <li>Keyword extraction</li>
+            <li>SEO scoring</li>
+            <li>Export reports</li>
+            <li>Analysis history</li>
+          </ul>
+          <a href="https://buy.stripe.com/bJeaEX8zUgzvb6n5lKf7i02" class="btn btn-pro">Start Pro</a>
+          <div class="pricing-alt-links">
+            <a href="https://buy.stripe.com/bJedR9dUednj5M34hGf7i03">$39.99/yr (save 17%)</a>
+            <span class="pricing-sep">·</span>
+            <a href="https://buy.stripe.com/14A3cv9DYfvr1vNaG4f7i04">$19.99 lifetime</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Usage limit banner -->
     <section id="limit-banner" class="limit-banner" hidden>
       <div class="limit-content">
@@ -115,6 +152,12 @@
     </section>
 
     <section id="results" role="status" aria-live="polite" hidden>
+      <div id="trial-banner" class="trial-banner" hidden>
+        <button id="trial-btn" type="button" class="btn btn-trial">Try Pro features on this analysis — free</button>
+      </div>
+      <div id="trial-cta" class="trial-cta" hidden>
+        <p>Like the full analysis? <a href="https://buy.stripe.com/bJeaEX8zUgzvb6n5lKf7i02" class="trial-cta-link">Upgrade to Pro</a> for unlimited access.</p>
+      </div>
       <div id="free-results">
         <!-- Score meter -->
         <div class="score-card">

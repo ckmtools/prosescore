@@ -1092,6 +1092,194 @@ footer a:hover {
   margin-top: 1rem;
 }
 
+/* Analysis counter */
+.analysis-counter {
+  display: inline-block;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+}
+
+/* Pricing section */
+.pricing-section {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.pricing-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+
+.pricing-desc {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.pricing-cards {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pricing-card {
+  flex: 1;
+  max-width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.pricing-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.pricing-price {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.pricing-period {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  text-align: left;
+}
+
+.pricing-card li {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  padding: 0.25rem 0;
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.pricing-card li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.pricing-current {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.pricing-card-featured {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 16px rgba(0, 229, 160, 0.1);
+}
+
+.pricing-card-featured .btn-pro {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.pricing-alt-links {
+  font-size: 0.8125rem;
+}
+
+.pricing-alt-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.pricing-alt-links a:hover {
+  color: var(--color-primary);
+}
+
+.pricing-sep {
+  color: var(--text-tertiary);
+  margin: 0 0.25rem;
+}
+
+/* Trial banner */
+.trial-banner {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.btn-trial {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px dashed var(--color-primary);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-trial:hover {
+  background: rgba(0, 229, 160, 0.08);
+}
+
+/* Trial CTA */
+.trial-cta {
+  text-align: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.trial-cta p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.trial-cta-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.trial-cta-link:hover {
+  text-decoration: underline;
+}
+
+/* Pricing section hidden when Pro */
+.pricing-section.hidden {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .pricing-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pricing-card {
+    max-width: 320px;
+    width: 100%;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

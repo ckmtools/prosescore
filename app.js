@@ -5,13 +5,17 @@ var STORAGE_KEY_TOKEN = 'prosescore_token';
 var STORAGE_KEY_HISTORY = 'prosescore_history';
 var STORAGE_KEY_THEME = 'prosescore_theme';
 var STORAGE_KEY_USAGE = 'prosescore_usage';
+var STORAGE_KEY_TRIAL = 'prosescore_free_trial_used';
+var STORAGE_KEY_COUNTER = 'prosescore_analysis_count';
 var TOKEN_PUBLIC_KEY = '4a0b3583a9941e9ff34ccad878f001c02f003b96335c9fc2bfc40f98caa820ed';
 var API_BASE = '/api';
 var FREE_DAILY_LIMIT = 5;
+var COUNTER_SEED = 500;
 
 var isPro = false;
 var proProduct = null;
 var currentResult = null;
+var trialMode = false;
 
 function init() {
   checkStoredToken();
@@ -25,6 +29,9 @@ function init() {
   updateProBadge();
   updateProUI();
   updateUsageDisplay();
+  updateAnalysisCounter();
+  setupTrialButton();
+  updatePricingVisibility();
 
   document.getElementById('export-md-btn').addEventListener('click', function () {
     if (!currentResult) return;
@@ -381,11 +388,13 @@ function setupAnalysis() {
     // Increment usage for free users
     if (!isPro) incrementUsage();
 
+    incrementAnalysisCount();
     document.getElementById('limit-banner').hidden = true;
     document.getElementById('results').hidden = false;
     renderFreeResults(result);
     renderProResults(currentResult);
     updateProUI();
+    showTrialBanner();
     saveToHistory(text, currentResult);
   });
 }
@@ -773,6 +782,82 @@ function renderHistoryPanel() {
   list.querySelectorAll('.history-delete').forEach(function (btn) {
     btn.addEventListener('click', function () { deleteHistoryEntry(btn.dataset.id); });
   });
+}
+
+// --- Analysis counter (social proof) ---
+
+function getAnalysisCount() {
+  var stored = localStorage.getItem(STORAGE_KEY_COUNTER);
+  if (stored) return parseInt(stored, 10);
+  return COUNTER_SEED;
+}
+
+function incrementAnalysisCount() {
+  var count = getAnalysisCount() + 1;
+  localStorage.setItem(STORAGE_KEY_COUNTER, String(count));
+  updateAnalysisCounter();
+}
+
+function updateAnalysisCounter() {
+  var el = document.getElementById('analysis-counter');
+  if (!el) return;
+  var count = getAnalysisCount();
+  el.textContent = count.toLocaleString() + '+ texts analyzed';
+}
+
+// --- Free Pro trial ---
+
+function isTrialUsed() {
+  return localStorage.getItem(STORAGE_KEY_TRIAL) === 'true';
+}
+
+function setupTrialButton() {
+  var btn = document.getElementById('trial-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    trialMode = true;
+    // Re-run analysis with Pro features
+    var text = document.getElementById('text-input').value.trim();
+    if (!text) return;
+
+    var result = textlens.analyze(text);
+    var density = textlens.density(text);
+    var seo = textlens.seoScore(text);
+    currentResult = { analysis: result, density: density, seo: seo };
+
+    renderFreeResults(result);
+    renderProResults(currentResult);
+
+    // Unlock pro teaser visually
+    var paywall = document.getElementById('paywall');
+    var proTeaser = document.getElementById('pro-teaser');
+    if (paywall) paywall.classList.add('hidden');
+    if (proTeaser) proTeaser.classList.add('hidden');
+
+    // Mark trial as used
+    localStorage.setItem(STORAGE_KEY_TRIAL, 'true');
+    trialMode = false;
+
+    // Hide trial button, show CTA
+    document.getElementById('trial-banner').hidden = true;
+    document.getElementById('trial-cta').hidden = false;
+  });
+}
+
+function showTrialBanner() {
+  if (isPro || isTrialUsed()) return;
+  var trialBanner = document.getElementById('trial-banner');
+  if (trialBanner) trialBanner.hidden = false;
+}
+
+function updatePricingVisibility() {
+  var section = document.querySelector('.pricing-section');
+  if (!section) return;
+  if (isPro) {
+    section.classList.add('hidden');
+  } else {
+    section.classList.remove('hidden');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
